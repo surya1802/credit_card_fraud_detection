@@ -45,7 +45,7 @@ How to Run the Project
 
 Clone this repository:
 
-git clone https://github.com/yourusername/Credit-Card-Fraud-Detection.git
+git clone https://github.com/surya1802/credit-card-fraud-detection.git
 cd Credit-Card-Fraud-Detection
 
 Install dependencies:
