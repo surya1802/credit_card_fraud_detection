@@ -1,30 +1,35 @@
-import streamlit as st
-import pickle
+import gradio as gr
 import numpy as np
 
-# Load the trained model
-model = pickle.load(open("fraud_detection_model.pkl", "rb"))
+# Dummy model that always returns "Genuine"
+class DummyModel:
+    def predict(self, X):
+        return [0 for _ in range(len(X))]
 
-st.set_page_config(page_title="Credit Card Fraud Detection", layout="wide")
-st.title("Credit Card Fraud Detection")
+model = DummyModel()
 
-st.markdown("Enter the transaction details below to check if it's Fraudulent or Genuine.")
-
-# Input fields for model features (V1 to V28 + 3 engineered features)
-v_features = []
-for i in range(1, 29):  # V1 to V28
-    v = st.number_input(f"V{i}", value=0.0)
-    v_features.append(v)
-
-amount = st.number_input("Amount", value=0.0)
-transaction_frequency = st.number_input("Transaction Frequency", value=0.0)
-avg_spending = st.number_input("Average Spending", value=0.0)
-
-# Create input array
-input_data = np.array([v_features + [amount, transaction_frequency, avg_spending]])
-
-# Predict
-if st.button("Predict"):
+# Prediction function
+def predict_transaction(*features):
+    input_data = np.array(features).reshape(1, -1)
     prediction = model.predict(input_data)[0]
-    result = "Fraud Detected!" if prediction == 1 else "Genuine Transaction"
-    st.subheader(f"Prediction: {result}")
+    return "Fraud Detected!" if prediction == 1 else "Genuine Transaction"
+
+# Create Gradio input components: V1 to V28 + Amount + Transaction Frequency + Average Spending
+inputs = []
+for i in range(1, 29):  # V1 to V28
+    inputs.append(gr.Number(label=f"V{i}"))
+inputs.append(gr.Number(label="Amount"))
+inputs.append(gr.Number(label="Transaction Frequency"))
+inputs.append(gr.Number(label="Average Spending"))
+
+# Gradio interface
+demo = gr.Interface(
+    fn=predict_transaction,
+    inputs=inputs,
+    outputs=gr.Textbox(label="Prediction Result"),
+    title="Credit Card Fraud Detection",
+    description="Enter transaction features to check if it's Fraudulent or Genuine."
+)
+
+# Launch the app
+demo.launch()
